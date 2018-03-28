@@ -1,0 +1,15 @@
+{
+    "extends": [
+        "prettier",
+        "prettier/flowtype"
+    ],
+    "plugins": [
+        "prettier"
+  ],
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "env": {
+        "browser": true
+    }
+}

@@ -1,0 +1,18 @@
+.megamenu {
+}
+
+.megamenu__item {
+    display: inline-block;
+}
+
+.megamenu__item + .megamenu__item {
+    margin-left: 1rem;
+}
+
+.megamenu__panel {
+    display: none;
+}
+
+.megamenu__panel--active {
+    display: block;
+}
