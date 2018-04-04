@@ -3,6 +3,8 @@
 
 .megamenu__item {
     display: inline-block;
+    position: relative;
+    vertical-align: middle;
 }
 
 .megamenu__item + .megamenu__item {
@@ -11,6 +13,15 @@
 
 .megamenu__panel {
     display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    padding: 1rem;
+    min-width: 17rem;
+    background-color: var(--color-white);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    box-shadow: 0 14px 36px 2px rgba(0, 0, 0, 0.15);
 }
 
 .megamenu__panel--active {

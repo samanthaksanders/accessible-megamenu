@@ -1,4 +1,7 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import './index.css';
+import App from './App';
 import { initAll } from './Megamenu';
 
 const options = {
@@ -8,3 +11,5 @@ const options = {
 document.addEventListener('DOMContentLoaded', () => {
     initAll(options);
 });
+
+ReactDOM.render(<App />, document.getElementById('root'));

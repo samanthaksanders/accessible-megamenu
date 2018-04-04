@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './Megamenu';
+import App from './App';
+import Megamenu from './Megamenu';
 
 it('renders without crashing', () => {
     const div = document.createElement('div');

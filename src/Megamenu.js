@@ -45,6 +45,14 @@ function shortID() {
     return `0000${((Math.random() * 36 ** 4) << 0).toString(36)}`.slice(-4);
 }
 
+function isChild(el, parent) {
+    if (parent.contains(el) || parent === el) {
+        return true;
+    }
+
+    return false;
+}
+
 export default class MegaMenu {
     constructor(menu, options) {
         // Settings
@@ -54,16 +62,20 @@ export default class MegaMenu {
         this.options = { ...defaultOptions, ...options };
         this.megamenu = menu;
         this.megamenuItems = [...menu.querySelectorAll('[data-megamenu-item]')];
+        this.opened = false;
 
         // Apply default aria attributes
         this.initARIA();
 
         // For each primary nam item trigger attach listeners
         this.megamenuItems.forEach(item => {
-            const trigger = item.querySelector('[data-megamenu-trigger]');
-            trigger.addEventListener('click', this.handleClick);
-            trigger.addEventListener('focusin', this.handleFocusIn);
-            trigger.addEventListener('focusout', this.handleFocusOut);
+            const itemLink = item.querySelector('a');
+
+            if (itemLink) {
+                itemLink.addEventListener('click', this.handleClick);
+                itemLink.addEventListener('focusin', this.handleFocusIn);
+                itemLink.addEventListener('focusout', this.handleFocusOut);
+            }
         });
 
         // Attach keydown listened to whole megamenu
@@ -75,110 +87,137 @@ export default class MegaMenu {
     // Multi columns/panels
 
     initARIA = () => {
+        setAttributes(this.megamenu, { role: 'menubar' });
+
         this.megamenuItems.forEach(item => {
-            const trigger = item.querySelector('[data-megamenu-trigger]');
+            const trigger = item.querySelector('a');
+            const triggerLabel = trigger.text;
+            const hasPanel = trigger.hasAttribute('data-megamenu-trigger');
             const panel = item.querySelector('[data-megamenu-panel]');
             const uniqueID = shortID();
             const controlID = `${this.options.menuClass}-control-${uniqueID}`;
             const labelID = `${this.options.menuClass}-label-${uniqueID}`;
 
-            const triggerAttributes = {
-                'aria-haspopup': true,
-                'aria-controls': controlID,
-                id: labelID,
-                'aria-expanded': false,
-            };
+            setAttributes(trigger, { role: 'menuitem' });
 
-            const panelAttributes = {
-                'aria-labelledby': labelID,
-                'aria-hidden': true,
-                id: controlID,
-            };
+            if (hasPanel) {
+                const triggerAttributes = {
+                    'aria-haspopup': true,
+                    'aria-controls': controlID,
+                    id: labelID,
+                    'aria-expanded': false,
+                };
 
-            setAttributes(trigger, triggerAttributes);
-            setAttributes(panel, panelAttributes);
+                const panelAttributes = {
+                    'aria-labelledby': labelID,
+                    'aria-hidden': true,
+                    'aria-label': triggerLabel,
+                    id: controlID,
+                    role: 'menu',
+                };
+
+                setAttributes(trigger, triggerAttributes);
+                setAttributes(panel, panelAttributes);
+            }
         });
     };
 
     handleClick = e => {
+        const panelID = e.target.getAttribute('aria-controls');
         // Test that the target has a panel to activate before preventing default
-        e.preventDefault();
-        // Test if there is a panel open already?
-        // Test if target is inside megamenu? if not, run handleClickOutside
+        if (panelID) {
+            e.preventDefault();
+            const panel = document.getElementById(panelID);
+            this.togglePanel(panel);
+        }
     };
 
     handleClickOutside = e => {
-        console.log('handle click outside');
-        // Run toggle with closing params
+        if (!isChild(e.target, this.megamenu)) {
+            this.hidePanel();
+        }
     };
 
-    handleFocus = event => {
-        const focusTarget = event.target;
+    handleFocus = e => {
+        // const focusTarget = event.target;
+        // focusTarget.classList.add(
+        //     `${this.options.menuItemTrigger}${this.options.focusedModifier}`,
+        // );
+    };
+
+    handleFocusIn = e => {
+        const focusTarget = e.target;
         focusTarget.classList.add(
             `${this.options.menuItemTrigger}${this.options.focusedModifier}`,
         );
     };
 
-    handleFocusIn = event => {
-        const focusTarget = event.target;
-        focusTarget.classList.add(
-            `${this.options.menuItemTrigger}${this.options.focusedModifier}`,
-        );
-    };
-
-    handleFocusOut = event => {
-        const focusTarget = event.target;
+    handleFocusOut = e => {
+        const focusTarget = e.target;
         focusTarget.classList.remove(
             `${this.options.menuItemTrigger}${this.options.focusedModifier}`,
         );
     };
 
-    handleKeydown = event => {
-        const keyCode = event.keyCode;
-        const isPrimaryNav = event.target.classList.contains(
-            this.options.menuItemTrigger,
-        );
+    handleNextKey = el => {
+        const nextLink = el.querySelector('a');
+        const nextLinkControl = nextLink.getAttribute('aria-controls');
+        if (this.opened) {
+            if (nextLinkControl) {
+                this.showPanel(document.getElementById(nextLinkControl));
+            } else {
+                this.hidePanel();
+            }
+        }
+        nextLink.focus();
+    };
+
+    handleKeydown = e => {
+        const keyCode = e.keyCode;
+        const target = e.target;
+        const targetParent = target.parentElement;
 
         switch (keyCode) {
             case Keyboard.ESCAPE:
-                console.log('Escape');
                 break;
             case Keyboard.DOWN:
-                console.log('Down');
+                if (target.hasAttribute('aria-controls')) {
+                    const panelID = target.getAttribute('aria-controls');
+                    const panel = document.getElementById(panelID);
+                    const firstLink = panel.querySelector('a');
+
+                    if (
+                        panel.classList.contains(
+                            `${this.options.panelClass}${
+                                this.options.activeModifier
+                            }`,
+                        )
+                    ) {
+                    } else {
+                        this.showPanel(panel);
+                        firstLink.focus();
+                    }
+                }
                 break;
             case Keyboard.UP:
-                console.log('Up');
                 break;
             case Keyboard.RIGHT:
-                if (isPrimaryNav) {
-                    const navItem = event.target.parentElement;
-                    const hasNextItem = navItem.nextElementSibling;
-                    if (hasNextItem) {
-                        navItem.nextElementSibling
-                            .querySelector('[data-megamenu-trigger]')
-                            .focus();
-                    }
+                const nextItem = targetParent.nextElementSibling;
+                if (nextItem) {
+                    this.handleNextKey(nextItem);
                 }
                 break;
             case Keyboard.LEFT:
-                if (isPrimaryNav) {
-                    const navItem = event.target.parentElement;
-                    const hasNextItem = navItem.previousElementSibling;
-                    if (hasNextItem) {
-                        navItem.previousElementSibling
-                            .querySelector('[data-megamenu-trigger]')
-                            .focus();
-                    }
+                const previousItem = targetParent.previousElementSibling;
+                if (previousItem) {
+                    this.handleNextKey(previousItem);
                 }
                 break;
             case Keyboard.TAB:
-                console.log('Tab');
                 break;
             case Keyboard.SPACE:
-                console.log('Space');
                 break;
             case Keyboard.ENTER:
-                console.log('Enter');
                 break;
             default:
                 //  console.log('Another random key');
@@ -187,12 +226,34 @@ export default class MegaMenu {
         }
     };
 
-    showPanel = () => {
-        console.log('show panel');
+    resetPanels = () => {
+        const allPanels = this.megamenu.querySelectorAll(
+            '[data-megamenu-panel]',
+        );
+        // Close any active panels
+        allPanels.forEach(p => {
+            p.setAttribute('aria-hidden', true);
+            p.classList.remove(
+                `${this.options.panelClass}${this.options.activeModifier}`,
+            );
+        });
+    };
+
+    showPanel = panel => {
+        this.resetPanels();
+        // Add active state to current panel
+        panel.setAttribute('aria-hidden', false);
+        panel.classList.add(
+            `${this.options.panelClass}${this.options.activeModifier}`,
+        );
+        document.addEventListener('click', this.handleClickOutside);
+        this.opened = true;
     };
 
     hidePanel = () => {
-        console.log('hide panel');
+        this.resetPanels();
+        document.removeEventListener('click', this.handleClickOutside);
+        this.opened = false;
     };
 
     toggleTabIndex = (isActive, menuItemLinks) => {
@@ -205,8 +266,13 @@ export default class MegaMenu {
         });
     };
 
-    togglePanel = () => {
-        console.log('toggle');
+    togglePanel = panel => {
+        const isActive = panel.getAttribute('aria-hidden');
+        if (isActive === 'true') {
+            this.showPanel(panel);
+        } else if (isActive === 'false') {
+            this.hidePanel(panel);
+        }
     };
 }
 

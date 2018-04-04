@@ -1,11 +1,36 @@
+:root {
+    --color-white: #fff;
+    --color-green: #4ba071;
+    --color-text: #222;
+  }
+
 body {
     margin: 0;
     padding: 2rem;
-    font-family: sans-serif;
+    font-family: 'Rubik', sans-serif;
 }
 
 ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+a:hover, 
+a:focus {
+    text-decoration: underline;
+    color: var(--color-green);;
+}
+
+.page__header {
+    padding-bottom: 2rem;
+}
+
+.page__logo {
+    display: block;
 }
