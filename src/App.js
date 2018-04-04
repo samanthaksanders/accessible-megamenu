@@ -6,11 +6,11 @@ const App = () => {
         <div className="page">
             <div className="page__header">
                 <div className="megamenu" data-megamenu>
-                    <div className="megamenu__item" data-megamenu-item>
+                    {/* <div className="megamenu__item" data-megamenu-item>
                         <a href="" className="page__logo">
                             <img src={logo} alt="Logo" />
                         </a>
-                    </div>
+                    </div> */}
                     <div className="megamenu__item" data-megamenu-item>
                         <a
                             href=""
@@ -22,13 +22,13 @@ const App = () => {
                         <div className="megamenu__panel" data-megamenu-panel>
                             <ul>
                                 <li>
-                                    <a href="" className="megamenu__link">Panel link</a>
+                                    <a href="" className="megamenu__link">Panel link 1</a>
                                 </li>
                                 <li>
-                                    <a href="" className="megamenu__link">Panel link</a>
+                                    <a href="" className="megamenu__link">Panel link 2</a>
                                 </li>
                                 <li>
-                                    <a href="" className="megamenu__link">Panel link</a>
+                                    <a href="" className="megamenu__link">Panel link 3</a>
                                 </li>
                             </ul>
                         </div>
@@ -44,13 +44,13 @@ const App = () => {
                         <div className="megamenu__panel" data-megamenu-panel>
                             <ul>
                                 <li>
-                                    <a href="" className="megamenu__link">Panel link</a>
+                                    <a href="" className="megamenu__link">Panel link 1</a>
                                 </li>
                                 <li>
-                                    <a href="" className="megamenu__link">Panel link</a>
+                                    <a href="" className="megamenu__link">Panel link 2</a>
                                 </li>
                                 <li>
-                                    <a href="" className="megamenu__link">Panel link</a>
+                                    <a href="" className="megamenu__link">Panel link 3</a>
                                 </li>
                             </ul>
                         </div>
@@ -62,7 +62,6 @@ const App = () => {
             </div>
 
             <div className="page__content">
-                <a href="">Link outside menu</a>
             </div>
         </div>
     );

@@ -82,10 +82,6 @@ export default class MegaMenu {
         this.megamenu.addEventListener('keydown', this.handleKeydown);
     }
 
-    // Keyboard
-    // left/right keys
-    // Multi columns/panels
-
     initARIA = () => {
         setAttributes(this.megamenu, { role: 'menubar' });
 
@@ -179,23 +175,51 @@ export default class MegaMenu {
 
         switch (keyCode) {
             case Keyboard.ESCAPE:
+                if (this.opened) {
+                    this.hidePanel();
+                }
                 break;
             case Keyboard.DOWN:
-                if (target.hasAttribute('aria-controls')) {
+                const isTopnavTrigger = target.hasAttribute('aria-controls');
+                const isChildLink = isChild(target, this.megamenu);
+
+                if (!isChildLink) {
+                    return;
+                }
+
+                if (isTopnavTrigger) {
                     const panelID = target.getAttribute('aria-controls');
                     const panel = document.getElementById(panelID);
                     const firstLink = panel.querySelector('a');
-
-                    if (
-                        panel.classList.contains(
-                            `${this.options.panelClass}${
-                                this.options.activeModifier
-                            }`,
-                        )
-                    ) {
+                    this.showPanel(panel);
+                    firstLink.focus();
+                } else {
+                    const nextItem = targetParent.nextElementSibling;
+                    if (nextItem) {
+                        const nextLink = nextItem.querySelector('a');
+                        nextLink.focus();
                     } else {
-                        this.showPanel(panel);
-                        firstLink.focus();
+                        // Read the end of links inside panel
+                        const closestNextItem = target.closest(
+                            '[data-megamenu-item]',
+                        ).nextElementSibling;
+
+                        if (!closestNextItem) {
+                            return;
+                        }
+                        const closestNextLink = closestNextItem.querySelector(
+                            'a',
+                        );
+                        const panelID = closestNextLink.getAttribute(
+                            'aria-controls',
+                        );
+                        if (panelID) {
+                            const panel = document.getElementById(panelID);
+                            this.showPanel(panel);
+                        } else if (this.opened) {
+                            this.hidePanel();
+                        }
+                        closestNextLink.focus();
                     }
                 }
                 break;
@@ -241,6 +265,9 @@ export default class MegaMenu {
 
     showPanel = panel => {
         this.resetPanels();
+        this.megamenu.classList.add(
+            `${this.options.menuClass}${this.options.activeModifier}`,
+        );
         // Add active state to current panel
         panel.setAttribute('aria-hidden', false);
         panel.classList.add(
@@ -252,6 +279,9 @@ export default class MegaMenu {
 
     hidePanel = () => {
         this.resetPanels();
+        this.megamenu.classList.remove(
+            `${this.options.menuClass}${this.options.activeModifier}`,
+        );
         document.removeEventListener('click', this.handleClickOutside);
         this.opened = false;
     };
