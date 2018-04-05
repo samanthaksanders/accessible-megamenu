@@ -172,6 +172,22 @@ export default class MegaMenu {
         const keyCode = e.keyCode;
         const target = e.target;
         const targetParent = target.parentElement;
+        const targetIsMegamenuChild = isChild(target, this.megamenu);
+        const targetIsTopnavLink =
+            target.hasAttribute('role') &&
+            target.getAttribute('role') === 'menuitem';
+        const targetIsPanelTrigger = target.hasAttribute('aria-controls');
+        const panelID = target.getAttribute('aria-controls');
+        const panel = panelID && document.getElementById(panelID);
+
+        const previousItem = targetParent.previousElementSibling;
+        let previousLink;
+        const nextItem = targetParent.nextElementSibling;
+        let nextLink;
+
+        if (!targetIsMegamenuChild) {
+            return;
+        }
 
         switch (keyCode) {
             case Keyboard.ESCAPE:
@@ -180,26 +196,18 @@ export default class MegaMenu {
                 }
                 break;
             case Keyboard.DOWN:
-                const isTopnavTrigger = target.hasAttribute('aria-controls');
-                const isChildLink = isChild(target, this.megamenu);
-
-                if (!isChildLink) {
-                    return;
-                }
-
-                if (isTopnavTrigger) {
-                    const panelID = target.getAttribute('aria-controls');
-                    const panel = document.getElementById(panelID);
-                    const firstLink = panel.querySelector('a');
-                    this.showPanel(panel);
-                    firstLink.focus();
+                if (targetIsTopnavLink) {
+                    if (targetIsPanelTrigger) {
+                        const firstLink = panel.querySelector('a');
+                        this.showPanel(panel);
+                        firstLink.focus();
+                    }
                 } else {
-                    const nextItem = targetParent.nextElementSibling;
                     if (nextItem) {
-                        const nextLink = nextItem.querySelector('a');
+                        nextLink = nextItem.querySelector('a');
                         nextLink.focus();
                     } else {
-                        // Read the end of links inside panel
+                        // Reached the end of links inside panel
                         const closestNextItem = target.closest(
                             '[data-megamenu-item]',
                         ).nextElementSibling;
@@ -210,12 +218,14 @@ export default class MegaMenu {
                         const closestNextLink = closestNextItem.querySelector(
                             'a',
                         );
-                        const panelID = closestNextLink.getAttribute(
+                        const nextPanelID = closestNextLink.getAttribute(
                             'aria-controls',
                         );
-                        if (panelID) {
-                            const panel = document.getElementById(panelID);
-                            this.showPanel(panel);
+                        if (nextPanelID) {
+                            const nextPanel = document.getElementById(
+                                nextPanelID,
+                            );
+                            this.showPanel(nextPanel);
                         } else if (this.opened) {
                             this.hidePanel();
                         }
@@ -224,15 +234,53 @@ export default class MegaMenu {
                 }
                 break;
             case Keyboard.UP:
+                if (targetIsTopnavLink) {
+                    // Test if is open and close panel
+                    if (!this.opened) {
+                        return;
+                    }
+
+                    if (previousItem) {
+                        previousLink = previousItem.querySelector('a');
+
+                        // show next panel if next link is a controller
+                        if (previousLink.hasAttribute('aria-controls')) {
+                            const previousPanelID = previousLink.getAttribute(
+                                'aria-controls',
+                            );
+                            const previousPanel = document.getElementById(
+                                previousPanelID,
+                            );
+                            const allPanelLinks = previousPanel.querySelectorAll(
+                                'a',
+                            );
+                            this.showPanel(previousPanel);
+                            allPanelLinks[allPanelLinks.length - 1].focus();
+                        }
+                    } else {
+                        this.hidePanel();
+                    }
+                } else {
+                    if (previousItem) {
+                        // has a sibling to go up to
+                        previousLink = previousItem.querySelector('a');
+                        previousLink.focus();
+                    } else {
+                        // Hit the first link in panel go up to topnav link
+                        const closestNextLink = target
+                            .closest('[data-megamenu-item]')
+                            .querySelector('a');
+
+                        closestNextLink.focus();
+                    }
+                }
                 break;
             case Keyboard.RIGHT:
-                const nextItem = targetParent.nextElementSibling;
                 if (nextItem) {
                     this.handleNextKey(nextItem);
                 }
                 break;
             case Keyboard.LEFT:
-                const previousItem = targetParent.previousElementSibling;
                 if (previousItem) {
                     this.handleNextKey(previousItem);
                 }
