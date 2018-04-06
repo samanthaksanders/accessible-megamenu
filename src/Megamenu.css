@@ -11,6 +11,45 @@
     margin-left: 1rem;
 }
 
+.megamenu__trigger-arrow {
+    display: inline-block;
+    position: relative;
+    width: 24px;
+    height: 12px;
+}
+
+.megamenu__trigger-arrow::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 4px;
+    width: 10px;
+    height: 2px;
+    background-color: currentColor;
+    transform: rotate(45deg);
+}
+
+.megamenu__item-trigger--active .megamenu__trigger-arrow::before {
+    transform: rotate(-45deg);
+}
+
+.megamenu__trigger-arrow::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    width: 10px;
+    height: 2px;
+    background-color: currentColor;
+    transform: rotate(-45deg);
+}
+
+.megamenu__item-trigger--active .megamenu__trigger-arrow::after {
+    transform: rotate(45deg);
+}
+
 .megamenu__panel {
     display: none;
     position: absolute;

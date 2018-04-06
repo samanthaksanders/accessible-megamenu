@@ -235,7 +235,6 @@ export default class MegaMenu {
                 break;
             case Keyboard.UP:
                 if (targetIsTopnavLink) {
-                    // Test if is open and close panel
                     if (!this.opened) {
                         return;
                     }
@@ -302,6 +301,16 @@ export default class MegaMenu {
         const allPanels = this.megamenu.querySelectorAll(
             '[data-megamenu-panel]',
         );
+        const allTriggers = this.megamenu.querySelectorAll(
+            '[data-megamenu-trigger]',
+        );
+        // Reset any active attribute on panel triggers
+        allTriggers.forEach(t => {
+            t.setAttribute('aria-expanded', false);
+            t.classList.remove(
+                `${this.options.menuItemTrigger}${this.options.activeModifier}`,
+            );
+        });
         // Close any active panels
         allPanels.forEach(p => {
             p.setAttribute('aria-hidden', true);
@@ -315,6 +324,13 @@ export default class MegaMenu {
         this.resetPanels();
         this.megamenu.classList.add(
             `${this.options.menuClass}${this.options.activeModifier}`,
+        );
+        const triggerID = panel.getAttribute('aria-labelledby');
+        const trigger = document.getElementById(triggerID);
+        // Add active state to panel trigger
+        trigger.setAttribute('aria-expanded', true);
+        trigger.classList.add(
+            `${this.options.menuItemTrigger}${this.options.activeModifier}`,
         );
         // Add active state to current panel
         panel.setAttribute('aria-hidden', false);
